@@ -39,46 +39,63 @@ namespace DoruReactAPICore22.Shared
         {
             string result = null;
             string[] lines, splitLine;
-            string covercast = "", coverseries = "", subLine;
+            string subLine;
             DateTime reldate;
             List<CoverModel> coverList = new List<CoverModel>();
 
             //result = File.ReadAllText(filePath);
             lines = File.ReadAllLines(filePath);
-            // convert all lines to small case
 
-            int i = 0, splitCount = 0;
             foreach (string line in lines)
             {
                 subLine = line.Length > 40 ? line.Substring(39) : "";
                 splitLine = subLine.Split(new char[] { '.', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                int splitCount = 0;
                 splitCount = splitLine.Count();
                 if (splitCount > 1 && splitLine[--splitCount] == "jpg")
                 {
                     CoverModel cover = new CoverModel();
+                    cover.Filename = subLine;
+                    coverList.Add(cover);
+                }
+            }
+            ParseCoverFilename(coverList);
+            result = JsonConvert.SerializeObject(coverList);
+            return result;
+        }
 
-                    if (Common.IsStringDateTime(splitLine[--splitCount], out reldate))
+        public static void ParseCoverFilename(List<CoverModel> covers)
+        {
+            string[] nameSplit;
+            string covercast = "", coverseries = "";
+            DateTime reldate;
+
+            int splitCount = 0;
+            foreach (CoverModel cover in covers)
+            {
+                nameSplit = cover.Filename.Split(new char[] { '.', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                splitCount = nameSplit.Count();
+                if (splitCount > 1 && nameSplit[--splitCount] == "jpg")
+                {
+                    if (Common.IsStringDateTime(nameSplit[--splitCount], out reldate))
                     {
                         cover.Releasedate = $"{reldate.ToString("yyyy")}-{reldate.ToString("MM")}-{reldate.ToString("dd")}";
                         --splitCount;
                     }
                     covercast = "";
-                    for(; splitCount > 0; --splitCount)
+                    for (; splitCount > 0; --splitCount)
                     {
-                        covercast = $" {splitLine[splitCount]}{covercast}";
+                        covercast = $" {nameSplit[splitCount]}{covercast}";
                     }
                     cover.Cast = covercast.Trim();
-                    if (Common.IsStringCoverSeries(splitLine[0], out coverseries))
+                    if (Common.IsStringCoverSeries(nameSplit[0], out coverseries))
                     {
                         cover.Series = coverseries.Trim();
                     }
-                    cover.Filename = subLine;
-                    coverList.Add(cover);
                 }
             }
-            result = JsonConvert.SerializeObject(coverList);
-            return result;
         }
+
     }
 }
 
