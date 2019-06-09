@@ -1,0 +1,88 @@
+﻿
+@{
+    ViewData["Title"] = "Index Cover";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cover</title>
+    <style>
+        input[type='submit'], button, [aria-label] {
+            cursor: pointer;
+        }
+
+        #spoiler {
+            display: none;
+        }
+
+        table {
+            font-family: Arial, sans-serif;
+            border: 1px solid;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #0066CC;
+            color: white;
+        }
+
+        td {
+            border: 1px solid;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <form action="javascript:void(0);" method="POST" onsubmit="loadFromText()">
+        <input type="submit" value="Load From G:\CoverText.txt">
+    </form>
+    <form action="javascript:void(0);" method="POST" onsubmit="loadCover()">
+        <input type="submit" value="Load">
+    </form>
+    <form action="javascript:void(0);" method="POST" onsubmit="saveCover()">
+        <input type="submit" value="Save">
+    </form>
+
+    <h1>Cover</h1>
+    <h3>Add</h3>
+    <form action="javascript:void(0);" method="POST" onsubmit="addCover()">
+        <input type="text" id="add-series" placeholder="New Cover">
+        <input type="text" id="add-cast">
+        <input type="submit" value="Add">
+    </form>
+
+    <div id="spoiler">
+        <h3>Edit</h3>
+        <form class="my-form">
+            <input type="hidden" id="edit-id">
+            <input type="text" id="edit-series">
+            <input type="text" id="edit-cast">
+            <input type="text" id="edit-releasedate">
+            <input type="submit" value="Save">
+            <a onclick="closeInput()" aria-label="Close">&#10006;</a>
+        </form>
+    </div>
+
+    <p id="counter"></p>
+    
+    <div id="coverheader">
+        <table>
+            <tr>
+                <th>Series</th>
+                <th>Cast</th>
+                <th>ReleaseDate</th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tbody id="cover"></tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

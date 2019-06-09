@@ -1,0 +1,285 @@
+﻿
+@{
+    ViewData["Title"] = "Index Cast";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Gravure</title>
+    <style>
+        input[type='submit'], button, [aria-label] {
+            cursor: pointer;
+        }
+
+        #spoiler {
+            display: none;
+        }
+
+        #dict {
+            display: none;
+        }
+
+        table {
+            font-family: Arial, sans-serif;
+            border: 1px solid;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #0066CC;
+            color: white;
+        }
+
+        td {
+            border: 1px solid;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <form action="javascript:void(0);" method="POST" onsubmit="makeCastIndex()">
+        <input type="submit" value="Make Sorted Cast Dictionary">
+    </form>
+    <form action="javascript:void(0);" method="POST" onsubmit="loadFromText()">
+        <input type="submit" value="Load From G:\CoverText.txt">
+    </form>
+    <form action="javascript:void(0);" method="POST" onsubmit="loadItem()">
+        <input type="submit" value="Load Cast">
+    </form>
+    <form action="javascript:void(0);" method="POST" onsubmit="saveItem()">
+        <input type="submit" value="Save Cast">
+    </form>
+
+    <h1>Gravure</h1>
+    <h3>Add</h3>
+    <form action="javascript:void(0);" method="POST" onsubmit="addItem()">
+        <input type="text" id="add-lastname" placeholder="New label">
+        <input type="submit" value="Add">
+    </form>
+
+    <div id="spoiler">
+        <h3>Edit</h3>
+        <form class="my-form">
+            <input type="hidden" id="edit-id">
+            <input type="text" id="edit-firstname">
+            <input type="text" id="edit-lastname">
+            <input type="submit" value="Save">
+            <a onclick="closeInput()" aria-label="Close">&#10006;</a>
+        </form>
+    </div>
+
+    <p id="counter"></p>
+
+    <div id="castheader">
+        <table>
+            <tr>
+                <th>FirstName</th>
+                <th>LastName</th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tbody id="cast"></tbody>
+        </table>
+    </div>
+
+    <div id="dict">
+        <table>
+            <tr>
+                <th>FirstName</th>
+                <th>LastName</th>
+            </tr>
+            <tbody id="dict"></tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    @*<script src="~/js/site.js" asp-append-version="true"></script>*@
+</body>
+</html>
+
+<script>
+    const uri = "api/castapi";
+    let castSet = null;
+    function getCount(data) {
+        const el = $("#counter");
+        let label = "Idol";
+        if (data) {
+            el.text(data + " " + label);
+        } else {
+            el.text("No " + label);
+        }
+    }
+
+    $(document).ready(function () {
+        getData();
+    });
+
+    function getData() {
+        $.ajax({
+            type: "GET",
+            url: uri,
+            cache: false,
+            success: function (data) {
+                const tBody = $("#cast");
+
+                $(tBody).empty();
+
+                getCount(data.length);
+
+                $.each(data, function (key, value) {
+                    const tr = $("<tr></tr>")
+                        .append($("<td></td>").text(value.firstname))
+                        .append($("<td></td>").text(value.lastname))
+                        .append(
+                            $("<td></td>").append(
+                                $("<button>Edit</button>").on("click", function () {
+                                    editItem(value.id);
+                                })
+                            )
+                        )
+                        .append(
+                            $("<td></td>").append(
+                                $("<button>Delete</button>").on("click", function () {
+                                    deleteItem(value.id);
+                                })
+                            )
+                        );
+
+                    tr.appendTo(tBody);
+                });
+
+                castSet = data;
+            }
+        });
+    }
+
+    function addItem() {
+        const item = {
+            firstname: $("#add-firstname").val(),
+            lastname: $("#add-lastname").val(),
+        };
+
+        $.ajax({
+            type: "POST",
+            accepts: "application/json",
+            url: uri,
+            contentType: "application/json",
+            data: JSON.stringify(item),
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("Something went wrong!");
+            },
+            success: function (result) {
+                getData();
+                $("#add-firstname").val("");
+            }
+        });
+    }
+
+    function deleteItem(id) {
+        $.ajax({
+            url: uri + "/" + id,
+            type: "DELETE",
+            success: function (result) {
+                getData();
+            }
+        });
+    }
+
+    function editItem(id) {
+        $.each(castSet, function (key, value) {
+            if (value.id === id) {
+                $("#edit-firstname").val(value.firstname);
+                $("#edit-id").val(value.id);
+                $("#edit-lastname").val(value.lastname);
+            }
+        });
+        $("#spoiler").css({ display: "block" });
+    }
+
+    $(".my-form").on("submit", function () {
+        const value = {
+            firstname: $("#edit-firstname").val(),
+            lastname: $("#edit-lastname").val(),
+            id: $("#edit-id").val()
+        };
+
+        $.ajax({
+            url: uri + "/" + $("#edit-id").val(),
+            type: "PUT",
+            accepts: "application/json",
+            contentType: "application/json",
+            data: JSON.stringify(value),
+            success: function (result) {
+                getData();
+            }
+        });
+
+        closeInput();
+        return false;
+    });
+
+    function closeInput() {
+        $("#spoiler").css({ display: "none" });
+    }
+
+    function saveItem(id) {
+        $.ajax({
+            url: uri + "/SaveCast",
+            type: "GET",
+            success: function (result) {
+            }
+        });
+    }
+
+    function loadItem(id) {
+        $.ajax({
+            url: uri + "/LoadCast",
+            type: "GET",
+            success: function (result) {
+                getData();
+            }
+        });
+    }
+
+    function loadFromText(id) {
+        $.ajax({
+            url: uri + "/LoadFromText",
+            type: "GET",
+            success: function (result) {
+                getData();
+                $("#cast").css({ display: "block" });
+            }
+        });
+    }
+
+    function makeCastIndex(id) {
+        $.ajax({
+            url: uri + "/MakeCastIndex",
+            type: "GET",
+            success: function (data) {
+                const tDict = $("#dict");
+
+                $(tDict).empty();
+
+                getCount(data.length);
+
+                $.each(data, function (key, value) {
+                    const tr = $("<tr></tr>")
+                        .append($("<td></td>").text(value.firstname))
+                        .append($("<td></td>").text(value.lastname));
+
+                    tr.appendTo(tDict);
+                });
+
+                $("#dict").css({ display: "block" });
+                $("#cast").css({ display: "none" });
+            }
+        });
+    }
+
+
+</script>
