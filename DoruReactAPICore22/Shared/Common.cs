@@ -5,22 +5,23 @@ namespace DoruReactAPICore22.Shared
 {
     public static class Common
     {
-        public static bool IsStringCoverSeries(string tryString, out string coverseries)
+        public static bool IsStringCoverSeries(string tryString, out string series, out string label)
         {
             bool result = false;
-            string[] coversplit;
-            coverseries = "";
-            coversplit = tryString.Split("-", StringSplitOptions.RemoveEmptyEntries);
-            if (coversplit.Count() == 2)
+            string[] nameSplit;
+            int numeric;
+            series = "";
+            label = null;
+
+            nameSplit = tryString.Split("-", StringSplitOptions.RemoveEmptyEntries);
+            int splitCount = nameSplit.Count();
+
+            label = splitCount == 2 ? nameSplit[0] : label;
+            bool isnumeric = IsStringNumeric(nameSplit[--splitCount], out numeric);
+            if (isnumeric)
             {
-                //int numeric;
-                //bool isnumeric = IsStringNumeric(coversplit[1], out numeric);
-                bool isnumeric = true;
-                if(isnumeric)
-                {
-                    coverseries = $"{coversplit[0].Trim()}-{coversplit[1].Trim()}";
-                    result = true;
-                }
+                series = tryString?.Trim();
+                result = true;
             }
             return result;
         }

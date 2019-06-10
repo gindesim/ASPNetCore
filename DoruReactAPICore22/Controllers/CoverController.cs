@@ -104,8 +104,8 @@ namespace DoruReactAPICore22.Controllers.Api
 
         // LOAD: api/Cover/LoadFromCoverTextFile
         [HttpGet]
-        [Route("LoadFromCoverTextFile")]
-        public async Task<IActionResult> LoadFromCoverTextFile()
+        [Route("UploadFromCoverTextFile")]
+        public async Task<IActionResult> UploadFromCoverTextFile()
         {
             string jsonString = ReadWriteFile.ReadTextAsJson(@"g:\covertext.txt");
             List<CoverModel> CoverList = JsonConvert.DeserializeObject<List<CoverModel>>(jsonString);
@@ -113,8 +113,11 @@ namespace DoruReactAPICore22.Controllers.Api
             //List<CoverModel> sortedCoverList = CoverList.OrderBy(x => x.series.ToLower()).ToList();
             List<CoverModel> sortedCoverList = CoverList;
 
-            // Clear DBSet
-            doruDB.Cover.RemoveRange(doruDB.Cover);
+            //// Clear DBSet
+            //doruDB.Cover.RemoveRange(doruDB.Cover);
+            // build a dictionary of key: filename and value: id
+            // build a list of not existed CoverModel by comparing to dictionary
+            // add not existed CoverModel to dbcontext
 
             foreach (var cover in sortedCoverList)
             {
@@ -146,13 +149,38 @@ namespace DoruReactAPICore22.Controllers.Api
                 foreach (var cover in allCover)
                 {
                     setupName = $"{cover?.Series} {cover?.Cast} {cover?.Releasedate}";
-                    setupName = $"{setupName.Trim()}.jpg";
+                    setupName = $"{setupName?.Trim()}.jpg";
                     if(setupName != cover.Filename)
                     {
                         result.Add(cover);
                     }
                 }
                 return result;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult> ReparseCoverFilename()
+        {
+            try
+            {
+                CoverModel updateCover;
+                List<CoverModel> allCover = doruDB.Cover.ToList();
+                ReadWriteFile.ParseCoverFilename(allCover);
+
+                foreach (var cover in allCover)
+                {
+                    //var cover = await doruDB.Cover.FindAsync(id);
+                    updateCover = await doruDB.Cover.FindAsync(cover.Id);
+                    updateCover = cover;
+                    doruDB.Cover.Update(updateCover);
+                }
+                await doruDB.SaveChangesAsync();
+                return NoContent();
             }
             catch (Exception e)
             {

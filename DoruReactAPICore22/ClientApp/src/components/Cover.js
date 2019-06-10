@@ -10,19 +10,25 @@ export class Cover extends Component {
         fetch('api/cover/covers')
             .then(response => response.json())
             .then(data => {
-                this.setState({ covers: data, loading: false });
+                this.setState({
+                    covers: data,
+                    loading: false,
+                    numCovers: data.length
+                });
             });
     }
 
     static renderCoversTable(covers) {
         return (
-            <table className='table table-striped'>
+            <table className='table table-striped' style={{ width: 1200 }}>
                 <thead>
                     <tr>
                         <th>Series</th>
                         <th>Cast</th>
                         <th>Release Date</th>
                         <th>Filename</th>
+                        <th>Label</th>
+                        <th>Id</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,6 +38,8 @@ export class Cover extends Component {
                             <td>{cover.cast}</td>
                             <td>{cover.releasedate}</td>
                             <td>{cover.filename}</td>
+                            <td>{cover.label}</td>
+                            <td>{cover.id}</td>
                         </tr>
                     )}
                 </tbody>
@@ -40,16 +48,27 @@ export class Cover extends Component {
     }
 
     render() {
+        let recordCounter = "";
+        if (!this.state.loaded) {
+            recordCounter = " Record(s)";
+        } if (this.state.numRows < 1) {
+            recordCounter = "No" + recordCounter;
+        } else {
+            recordCounter = this.state.numCovers + recordCounter;
+        };
+
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
             : Cover.renderCoversTable(this.state.covers);
 
         return (
             <div>
-                <h1>All Covers</h1>
+                <h1>All Covers: {recordCounter}</h1>
                 <p>List of all covers</p>
                 {contents}
             </div>
         );
     }
+
 }
+

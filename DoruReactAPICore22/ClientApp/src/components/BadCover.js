@@ -5,13 +5,16 @@ export class BadCover extends Component {
 
     constructor(props) {
         super(props);
-        this.countRef = React.coverRef();
         this.state = { badcovers: [], loading: true };
 
         fetch('api/cover/badcovers')
             .then(response => response.json())
             .then(data => {
-                this.setState({ badcovers: data, loading: false })
+                this.setState({
+                    badcovers: data,
+                    loading: false,
+                    numCovers: data.length
+                })
             });
     }
 
@@ -41,28 +44,25 @@ export class BadCover extends Component {
     }
 
     render() {
-        let counterRender = this.state.badcovers;
-        let counter = counterRender.length;
+        let recordCounter = "";
+        if (!this.state.loaded) {
+            recordCounter = " Record(s)";
+        } if (this.state.numRows < 1) {
+            recordCounter = "No" + recordCounter;
+        } else {
+            recordCounter = this.state.numCovers + recordCounter;
+        };
+
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
             : BadCover.renderBadCoversTable(this.state.badcovers);
 
         return (
             <div>
-                <h1>Bad-Formatted Cover: {counter}</h1>
+                <h1>Bad-Formatted Cover: {recordCounter}</h1>
                 <p>List of cover without proper naming</p>
                 {contents}
             </div>
         );
     }
-
-    //getCount(data) {
-    //    const el = this.countRef;
-    //    let label = "Cover";
-    //    if (data) {
-    //        el.text(data + " " + label);
-    //    } else {
-    //        el.text("No " + label);
-    //    }
-    //}
 }

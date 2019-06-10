@@ -40,7 +40,6 @@ namespace DoruReactAPICore22.Shared
             string result = null;
             string[] lines, splitLine;
             string subLine;
-            DateTime reldate;
             List<CoverModel> coverList = new List<CoverModel>();
 
             //result = File.ReadAllText(filePath);
@@ -67,7 +66,7 @@ namespace DoruReactAPICore22.Shared
         public static void ParseCoverFilename(List<CoverModel> covers)
         {
             string[] nameSplit;
-            string covercast = "", coverseries = "";
+            string covercast = "", coverseries, coverlabel;
             DateTime reldate;
 
             int splitCount = 0;
@@ -87,11 +86,13 @@ namespace DoruReactAPICore22.Shared
                     {
                         covercast = $" {nameSplit[splitCount]}{covercast}";
                     }
-                    cover.Cast = covercast.Trim();
-                    if (Common.IsStringCoverSeries(nameSplit[0], out coverseries))
+                    cover.Cast = covercast?.Trim();
+                    if (Common.IsStringCoverSeries(nameSplit[0], out coverseries, out coverlabel))
                     {
-                        cover.Series = coverseries.Trim();
+                        cover.Series = coverseries?.Trim();
                     }
+                    if (coverlabel != null)
+                        cover.Label = coverlabel?.Trim();
                 }
             }
         }
